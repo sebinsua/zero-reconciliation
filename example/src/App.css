@@ -1,0 +1,8 @@
+.App {
+  text-align: center;
+}
+
+.Text, .FastText {
+  display: inline-block;
+  margin: 5px;
+}
