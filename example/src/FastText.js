@@ -1,49 +1,37 @@
-import React, { Component, PureComponent } from 'react';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-let FastText;
-if (process.env.NODE_ENV !== 'production') {
-  FastText = class Text extends PureComponent {
-    render() {
-      const { value } = this.props;
-      return (
-        <span className="FastText">
-          {value}
-        </span>
-      );
-    }
-  }
-} else {
-  FastText = class FastText extends Component {
+class FastText extends Component {
 
-    currentValue = this.props.value;
+  currentValue = this.props.value;
+  nextFrameId;
 
-    shouldComponentUpdate(nextProps) {
-      if (nextProps.value !== this.props.value) {
-        if (this.el) {
-          this.nextValue = nextProps.value;
-          if (this.currentValue !== this.nextValue) {
-            window.requestAnimationFrame(
-              () => {
-                this.el.firstChild.nodeValue = this.nextValue;
-                this.currentValue = this.nextValue;
-              }
-            );
-          }
+  shouldComponentUpdate(nextProps) {
+    if (nextProps.value !== this.props.value) {
+      if (this.el) {
+        this.nextValue = nextProps.value;
+        if (this.currentValue !== this.nextValue) {
+          this.nextFrameId = window.requestAnimationFrame(
+            () => {
+              this.el.firstChild.nodeValue = this.nextValue;
+              this.currentValue = this.nextValue;
+            }
+          );
         }
       }
-      return false;
     }
+    return false;
+  }
 
-    render() {
-      const { value } = this.props;
-      return (
-        <span className="FastText" ref={ref => (this.el = ref)}>
-          {value}
-        </span>
-      );
-    }
+  render() {
+    const { value } = this.props;
+    return (
+      <span className="FastText" ref={ref => (this.el = ref)}>
+        {value || 0}
+      </span>
+    );
   }
 }
 
 export { FastText }
-export default FastText;
+export default connect(state => ({ value: state.value }))(FastText);
