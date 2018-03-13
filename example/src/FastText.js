@@ -1,25 +1,47 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 
 class FastText extends Component {
 
-  currentValue = this.props.value;
-  nextFrameId;
+  valueUpdaterId = undefined;
+  nextFrameId = undefined;
+  previousValue = this.props.value;
+
+  componentDidMount() {
+    const createRand = () => (Math.random() * 100).toFixed(2);
+    const HOW_OFTEN = 200;
+
+    this.valueUpdaterId = window.setInterval(
+      () => this.causeRender(createRand()),
+      HOW_OFTEN
+    );
+  }
+
+  componentWillUnmount() {
+    if (this.valueUpdaterId) {
+      window.clearInterval(this.valueUpdaterId);
+    }
+  }
+
+  causeRender = (value) => {
+    if (value === this.previousValue) {
+      return false;
+    }
+
+    if (this.el) {
+      if (this.nextFrameId) {
+        window.cancelAnimationFrame(this.nextFrameId);
+      }
+      this.nextFrameId = window.requestAnimationFrame(
+        () => {
+          this.el.firstChild.nodeValue = value;
+          this.previousValue = value;
+          this.nextFrameId = null;
+        }
+      );
+    }
+  }
 
   shouldComponentUpdate(nextProps) {
-    if (nextProps.value !== this.props.value) {
-      if (this.el) {
-        this.nextValue = nextProps.value;
-        if (this.currentValue !== this.nextValue) {
-          this.nextFrameId = window.requestAnimationFrame(
-            () => {
-              this.el.firstChild.nodeValue = this.nextValue;
-              this.currentValue = this.nextValue;
-            }
-          );
-        }
-      }
-    }
     return false;
   }
 
@@ -34,4 +56,4 @@ class FastText extends Component {
 }
 
 export { FastText }
-export default connect(state => ({ value: state.value }))(FastText);
+export default FastText;
